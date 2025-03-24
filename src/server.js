@@ -11,13 +11,19 @@ server.on('connection', (ws) => {
             if (!rooms[data.room]) {
                 rooms[data.room] = { players: [], board: ["", "", "", "", "", "", "", "", ""] };
             }
+			if (rooms[data.room].players.length > 2) {
+				ws.send(JSON.stringify({ type: "error", message: "Room is full! Disconnecting..." }));
+				ws.close();
+				return;
+			}
             if (rooms[data.room].players.length < 2) {
+				ws.symbol = rooms[data.room].players.length === 0 ? "X" : (rooms[data.room].players[0].symbol === "X" ? "O" : "X");
 				rooms[data.room].players.push(ws);
 				rooms[data.room].players.forEach(player =>
 					player.send(JSON.stringify({
 						type: "join",
 						players: rooms[data.room].players.length,
-						symbol: rooms[data.room].players.length === 1 ? "X" : "O",
+						symbol: ws.symbol,
 						board: rooms[data.room].board,
 						player: player === ws ? "Y" : "O"
 					}))
@@ -61,7 +67,7 @@ server.on('connection', (ws) => {
 					player.send(JSON.stringify({
 						type: "leave",
 						players: rooms[room].players.length,
-						symbol: rooms[room].players.length === 1 ? "X" : "O",
+						symbol: ws.symbol,
 						board: rooms[room].board,
 						player: player === ws ? "Y" : "O"
 					}))
