@@ -1,17 +1,38 @@
 const WebSocket = require('ws');
-const server = new WebSocket.Server({ port: process.env.PORT || 8080 });
+const server = new WebSocket.Server({ port: 8080 });
 
-console.log(`WebSocket server is running on port ${process.env.PORT || 8080}`);
+const rooms = {}; // Store game state per room
 
 server.on('connection', (ws) => {
-    console.log('Client connected');
-
     ws.on('message', (message) => {
-        console.log(`Received: ${message}`);
-        ws.send(`Echo: ${message}`);
+        const data = JSON.parse(message);
+        
+        if (data.type === "join") {
+            if (!rooms[data.room]) {
+                rooms[data.room] = { players: [], board: ["", "", "", "", "", "", "", "", ""] };
+            }
+            if (rooms[data.room].players.length < 2) {
+                rooms[data.room].players.push(ws);
+                ws.send(JSON.stringify({ type: "start", symbol: rooms[data.room].players.length === 1 ? "X" : "O" }));
+                
+                if (rooms[data.room].players.length === 2) {
+                    rooms[data.room].players.forEach(player => player.send(JSON.stringify({ type: "update", board: rooms[data.room].board })));
+                }
+            }
+        }
+        
+        if (data.type === "move") {
+            rooms[data.room].board = data.board;
+            rooms[data.room].players.forEach(player => player.send(JSON.stringify({ type: "update", board: data.board })));
+        }
     });
-
+    
     ws.on('close', () => {
-        console.log('Client disconnected');
+        for (let room in rooms) {
+            rooms[room].players = rooms[room].players.filter(player => player !== ws);
+            if (rooms[room].players.length === 0) delete rooms[room];
+        }
     });
 });
+
+console.log("WebSocket server running on ws://localhost:8080");
