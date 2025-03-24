@@ -23,7 +23,7 @@ server.on('connection', (ws) => {
         
         if (data.type === "move") {
             rooms[data.room].board = data.board;
-            rooms[data.room].players.forEach(player => player.send(JSON.stringify({ type: "update", board: data.board })));
+            rooms[data.room].players.forEach(player => player.send(JSON.stringify({ type: "update", players: rooms[data.room].players.length, board: data.board, player: rooms[data.room].players.map(player => player === ws ? "Y" : "O") })));
         }
     });
     
