@@ -35,7 +35,8 @@ server.on('connection', (ws) => {
 							type: "update",
 							players: rooms[data.room].players.length,
 							board: rooms[data.room].board,
-							player: player === ws ? "Y" : "O"
+							player: player === ws ? "Y" : "O",
+							turned: ws.symbol === player.symbol ? "Y" : "O"
 						}))
 					);
                 }
