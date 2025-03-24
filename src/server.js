@@ -13,10 +13,10 @@ server.on('connection', (ws) => {
             }
             if (rooms[data.room].players.length < 2) {
                 rooms[data.room].players.push(ws);
-                ws.send(JSON.stringify({ type: "start", symbol: rooms[data.room].players.length === 1 ? "X" : "O" }));
+                ws.send(JSON.stringify({ type: "start", players: rooms[data.room].players.length, symbol: rooms[data.room].players.length === 1 ? "X" : "O", board: rooms[data.room].board, player: rooms[data.room].players.map(player => player === ws ? "Y" : "O") }));
                 
                 if (rooms[data.room].players.length === 2) {
-                    rooms[data.room].players.forEach(player => player.send(JSON.stringify({ type: "update", board: rooms[data.room].board })));
+                    rooms[data.room].players.forEach(player => player.send(JSON.stringify({ type: "update", players: rooms[data.room].players.length, board: rooms[data.room].board, player: rooms[data.room].players.map(player => player === ws ? "Y" : "O") })));
                 }
             }
         }
