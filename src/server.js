@@ -13,17 +13,40 @@ server.on('connection', (ws) => {
             }
             if (rooms[data.room].players.length < 2) {
                 rooms[data.room].players.push(ws);
-                ws.send(JSON.stringify({ type: "start", players: rooms[data.room].players.length, symbol: rooms[data.room].players.length === 1 ? "X" : "O", board: rooms[data.room].board, player: rooms[data.room].players.map(player => player === ws ? "Y" : "O") }));
+                
+				ws.send(JSON.stringify({ 
+					type: "start", 
+					players: rooms[data.room].players.length, 
+					symbol: rooms[data.room].players.length === 1 ? "X" : "O", 
+					board: rooms[data.room].board, 
+					player: rooms[data.room].players.map(p => p === ws ? "Y" : "O") 
+				}));
                 
                 if (rooms[data.room].players.length === 2) {
-                    rooms[data.room].players.forEach(player => player.send(JSON.stringify({ type: "update", players: rooms[data.room].players.length, board: rooms[data.room].board, player: rooms[data.room].players.map(player => player === ws ? "Y" : "O") })));
+                    rooms[data.room].players.forEach(player => 
+						player.send(JSON.stringify({
+							type: "update",
+							players: rooms[data.room].players.length,
+							board: rooms[data.room].board,
+							player: rooms[data.room].players.map(player => player === ws ? "Y" : "O")
+						}))
+					);
                 }
             }
         }
         
         if (data.type === "move") {
-            rooms[data.room].board = data.board;
-            rooms[data.room].players.forEach(player => player.send(JSON.stringify({ type: "update", players: rooms[data.room].players.length, board: data.board, player: rooms[data.room].players.map(player => player === ws ? "Y" : "O") })));
+            if (rooms[data.room]) {  // Ensure the room exists
+				rooms[data.room].board = data.board;
+				rooms[data.room].players.forEach(player => 
+					player.send(JSON.stringify({ 
+						type: "update", 
+						players: rooms[data.room].players.length, 
+						board: data.board, 
+						player: rooms[data.room].players.map(p => p === ws ? "Y" : "O") 
+					}))
+				);
+			}
         }
     });
     
