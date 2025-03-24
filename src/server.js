@@ -15,7 +15,7 @@ server.on('connection', (ws) => {
 				rooms[data.room].players.push(ws);
 				rooms[data.room].players.forEach(player =>
 					player.send(JSON.stringify({
-						type: "start",
+						type: "join",
 						players: rooms[data.room].players.length,
 						symbol: rooms[data.room].players.length === 1 ? "X" : "O",
 						board: rooms[data.room].board,
@@ -54,7 +54,19 @@ server.on('connection', (ws) => {
     ws.on('close', () => {
         for (let room in rooms) {
             rooms[room].players = rooms[room].players.filter(player => player !== ws);
-            if (rooms[room].players.length === 0) delete rooms[room];
+            if (rooms[room].players.length === 0){
+				delete rooms[room];
+			}else{
+				rooms[room].players.forEach(player =>
+					player.send(JSON.stringify({
+						type: "leave",
+						players: rooms[room].players.length,
+						symbol: rooms[room].players.length === 1 ? "X" : "O",
+						board: rooms[room].board,
+						player: player === ws ? "Y" : "O"
+					}))
+				);
+			}
         }
     });
 });
