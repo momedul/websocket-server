@@ -1,0 +1,11 @@
+services:
+  - name: websocket-server
+    type: web
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 8080
+        
