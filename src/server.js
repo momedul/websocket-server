@@ -53,7 +53,7 @@ server.on('connection', (ws) => {
             rooms[room].players = rooms[room].players.filter(player => player !== ws);
             if (rooms[room].players.length === 0){
 				delete rooms[room];
-			}else{
+			}else if (rooms[room].players.length < 2){
 				rooms[room].players.forEach(player =>
 					player.send(JSON.stringify({
 						type: "leave",
