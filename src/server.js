@@ -11,36 +11,36 @@ server.on('connection', (ws) => {
             if (!rooms[data.room]) {
                 rooms[data.room] = { players: [], board: ["", "", "", "", "", "", "", "", ""], turned: null };
             }
-			if (rooms[data.room].players.length > 2) {
+			if (rooms[data.room].players.length >= 2) {
 				ws.send(JSON.stringify({ type: "error", message: "Room is full! Disconnecting..." }));
 				ws.close();
 				return;
 			}
-            if (rooms[data.room].players.length < 2) {
-				ws.symbol = rooms[data.room].players.length === 0 ? "X" : (rooms[data.room].players[0].symbol === "X" ? "O" : "X");
-				rooms[data.room].players.push(ws);
-				rooms[data.room].players.forEach(player =>
-					player.send(JSON.stringify({
-						type: "join",
-						players: rooms[data.room].players.length,
-						symbol: ws.symbol,
-						board: rooms[data.room].board,
-						player: player === ws ? "Y" : "O",
-						turned: rooms[data.room].turned
-					}))
-				);
-            }
+            
+			ws.symbol = rooms[data.room].players.length === 0 ? "X" : (rooms[data.room].players[0].symbol === "X" ? "O" : "X");
+			rooms[data.room].players.push(ws);
+			rooms[data.room].players.forEach(player =>
+				player.send(JSON.stringify({
+					type: "join",
+					players: rooms[data.room].players.length,
+					symbol: ws.symbol,
+					board: rooms[data.room].board,
+					player: player.symbol === ws.symbol ? "Y" : "O",
+					turned: rooms[data.room].turned
+				}))
+			);
+		
         }
         
         if (data.type === "move") {
-            if (rooms[data.room]) {  // Ensure the room exists
+            if (rooms[data.room]) {
 				rooms[data.room].board = data.board;
 				rooms[data.room].players.forEach(player =>
 					player.send(JSON.stringify({
 						type: "update",
 						players: rooms[data.room].players.length,
 						board: data.board,
-						player: player === ws ? "Y" : "O",
+						player: player.symbol === ws.symbol ? "Y" : "O",
 						turned: player.symbol === data.turn ? "Y" : "O"
 					}))
 				);
@@ -60,7 +60,7 @@ server.on('connection', (ws) => {
 						players: rooms[room].players.length,
 						symbol: ws.symbol,
 						board: rooms[room].board,
-						player: player === ws ? "Y" : "O"
+						player: player.symbol === ws.symbol ? "Y" : "O"
 					}))
 				);
 			}
