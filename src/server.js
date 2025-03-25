@@ -9,7 +9,7 @@ server.on('connection', (ws) => {
         
         if (data.type === "join") {
             if (!rooms[data.room]) {
-                rooms[data.room] = { players: [], board: ["", "", "", "", "", "", "", "", ""] };
+                rooms[data.room] = { players: [], board: ["", "", "", "", "", "", "", "", ""], turned: null };
             }
 			if (rooms[data.room].players.length > 2) {
 				ws.send(JSON.stringify({ type: "error", message: "Room is full! Disconnecting..." }));
@@ -25,21 +25,10 @@ server.on('connection', (ws) => {
 						players: rooms[data.room].players.length,
 						symbol: ws.symbol,
 						board: rooms[data.room].board,
-						player: player === ws ? "Y" : "O"
+						player: player === ws ? "Y" : "O",
+						turned: rooms[data.room].turned
 					}))
 				);
-				
-                if (rooms[data.room].players.length === 2) {
-                    rooms[data.room].players.forEach(player => 
-						player.send(JSON.stringify({
-							type: "update",
-							players: rooms[data.room].players.length,
-							board: rooms[data.room].board,
-							player: player === ws ? "Y" : "O",
-							turned: ws.symbol === player.symbol ? "Y" : "O"
-						}))
-					);
-                }
             }
         }
         
@@ -52,7 +41,7 @@ server.on('connection', (ws) => {
 						players: rooms[data.room].players.length,
 						board: data.board,
 						player: player === ws ? "Y" : "O",
-						turned: ws.symbol === player.symbol ? "Y" : "O"
+						turned: player.symbol === data.turn ? "Y" : "O"
 					}))
 				);
 			}
